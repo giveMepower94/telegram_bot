@@ -1,2 +1,2 @@
 # telegram_bot
-Telegram bot for an ice cream shop
+A Telegram bot for an ice cream shop that allows customers to browse products, place orders, and get notifications about promotions.
