@@ -28,7 +28,7 @@ def create_app(app_settings: AppSettings) -> Application:
         app_settings.TELEGRAM_API_KEY.get_secret_value()
     ).build()
 
-    return application
+    return application  # type: ignore[return-value]
 
 
 if __name__ == '__main__':
