@@ -1,15 +1,21 @@
 from telegram.ext import Application as PTBApplication, ApplicationBuilder
 from settings.config import AppSettings
 import logging
+from app.handlers import HANDLERS
 
 
 class Application(PTBApplication):
     def __init__(self, app_settings: AppSettings, **kwargs):
         super().__init__(**kwargs)
         self._settings = app_settings
+        self._register_handlers()
 
     def run(self) -> None:
         self.run_polling()
+
+    def _register_handlers(self):
+        for handler in HANDLERS:
+            self.add_handler(handler)
 
 
 def configure_logging():
