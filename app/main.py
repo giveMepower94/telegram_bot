@@ -2,6 +2,7 @@ from telegram.ext import Application as PTBApplication, ApplicationBuilder
 from settings.config import AppSettings
 import logging
 from app.handlers import HANDLERS
+from app.infra.postgres.db import Database
 
 
 class Application(PTBApplication):
@@ -9,6 +10,15 @@ class Application(PTBApplication):
         super().__init__(**kwargs)
         self._settings = app_settings
         self._register_handlers()
+        self.database = Database(app_settings.POSTGRES_DSN)
+
+    @staticmethod
+    async def initialize_dependencies(application: "Application") -> None:
+        await application.database.initialize()
+
+    @staticmethod
+    async def shutdown_dependencies(application: "Application") -> None:
+        await application.database.shutdown()
 
     def run(self) -> None:
         self.run_polling()
@@ -27,13 +37,14 @@ def configure_logging():
 
 
 def create_app(app_settings: AppSettings) -> Application:
-    application = ApplicationBuilder().application_class(
-        Application,
-        kwargs={"app_settings": app_settings}
-    ).token(
-        app_settings.TELEGRAM_API_KEY.get_secret_value()
-    ).build()
-
+    application = (
+        ApplicationBuilder()
+        .application_class(Application, kwargs={"app_settings": app_settings})
+        .post_init(Application.initialize_dependencies)  # type: ignore[arg-type]
+        .post_shutdown(Application.shutdown_dependencies)  # type: ignore[arg-type]
+        .token(app_settings.TELEGRAM_API_KEY.get_secret_value())
+        .build()
+    )
     return application  # type: ignore[return-value]
 
 
