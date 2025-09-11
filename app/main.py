@@ -1,4 +1,6 @@
 from telegram.ext import Application as PTBApplication, ApplicationBuilder
+from app.core.users.repositories import UserRepository
+from app.core.users.services import UserService
 from settings.config import AppSettings
 import logging
 from app.handlers import HANDLERS
@@ -11,6 +13,8 @@ class Application(PTBApplication):
         self._settings = app_settings
         self._register_handlers()
         self.database = Database(app_settings.POSTGRES_DSN)
+        user_repository = UserRepository(database=self.database)
+        self.user_service = UserService(repository=user_repository)
 
     @staticmethod
     async def initialize_dependencies(application: "Application") -> None:

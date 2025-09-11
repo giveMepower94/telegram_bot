@@ -26,3 +26,6 @@ black = "^25.1.0"
 mypy = "^1.17.1"
 asyncpg-stubs = "^0.30.2"
 
+[tool.flake8]
+max-line-length = 120
+
