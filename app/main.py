@@ -5,31 +5,45 @@ from settings.config import AppSettings
 import logging
 from app.handlers import HANDLERS
 from app.infra.postgres.db import Database
+from app.infra.base import Base
+
+from ptbcontrib.roles import setup_roles
+from app.core.users.constants import RolesEnum
 
 
 class Application(PTBApplication):
     def __init__(self, app_settings: AppSettings, **kwargs):
         super().__init__(**kwargs)
         self._settings = app_settings
-        self._register_handlers()
-        self.database = Database(app_settings.POSTGRES_DSN)
+        self._roles = setup_roles(self)
+        self.database = Database(app_settings.POSTGRES_DSN, declarative_base=Base)
         user_repository = UserRepository(database=self.database)
         self.user_service = UserService(repository=user_repository)
 
     @staticmethod
-    async def initialize_dependencies(application: "Application") -> None:
-        await application.database.initialize()
+    async def application_startup(application: "Application") -> None:
+        await application.database.create_tables()
+        await application.setup_roles()
+        application.register_handlers()
 
     @staticmethod
-    async def shutdown_dependencies(application: "Application") -> None:
+    async def application_shutdown(application: "Application") -> None:
         await application.database.shutdown()
 
     def run(self) -> None:
         self.run_polling()
 
-    def _register_handlers(self):
+    def register_handlers(self):
         for handler in HANDLERS:
             self.add_handler(handler)
+
+    async def setup_roles(self) -> None:
+        for role in RolesEnum:
+            if role not in self._roles:
+                self._roles.add_role(role)
+
+            for user_id in await self.user_service.get_user_ids_for_role(RolesEnum[role]):
+                self._roles[role].add_member(user_id)
 
 
 def configure_logging():
@@ -44,8 +58,8 @@ def create_app(app_settings: AppSettings) -> Application:
     application = (
         ApplicationBuilder()
         .application_class(Application, kwargs={"app_settings": app_settings})
-        .post_init(Application.initialize_dependencies)  # type: ignore[arg-type]
-        .post_shutdown(Application.shutdown_dependencies)  # type: ignore[arg-type]
+        .post_init(Application.application_startup)  # type: ignore[arg-type]
+        .post_shutdown(Application.application_shutdown)  # type: ignore[arg-type]
         .token(app_settings.TELEGRAM_API_KEY.get_secret_value())
         .build()
     )

@@ -262,62 +262,61 @@ test = ["objgraph", "psutil", "setuptools"]
 
 [[package]]
 name = "h11"
-version = "0.16.0"
+version = "0.14.0"
 description = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "h11-0.16.0-py3-none-any.whl", hash = "sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"},
-    {file = "h11-0.16.0.tar.gz", hash = "sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1"},
+    {file = "h11-0.14.0-py3-none-any.whl", hash = "sha256:e3fe4ac4b851c468cc8363d500db52c2ead036020723024a109d37346efaa761"},
+    {file = "h11-0.14.0.tar.gz", hash = "sha256:8f19fbbe99e72420ff35c00b27a34cb9937e902a8b810e2c88300c6f0a3b699d"},
 ]
 
 [[package]]
 name = "httpcore"
-version = "1.0.9"
+version = "0.16.3"
 description = "A minimal low-level HTTP client."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "httpcore-1.0.9-py3-none-any.whl", hash = "sha256:2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55"},
-    {file = "httpcore-1.0.9.tar.gz", hash = "sha256:6e34463af53fd2ab5d807f399a9b45ea31c3dfa2276f15a2c3f00afff6e176e8"},
+    {file = "httpcore-0.16.3-py3-none-any.whl", hash = "sha256:da1fb708784a938aa084bde4feb8317056c55037247c787bd7e19eb2c2949dc0"},
+    {file = "httpcore-0.16.3.tar.gz", hash = "sha256:c5d6f04e2fc530f39e0c077e6a30caa53f1451096120f1f38b954afd0b17c0cb"},
 ]
 
 [package.dependencies]
+anyio = ">=3.0,<5.0"
 certifi = "*"
-h11 = ">=0.16"
+h11 = ">=0.13,<0.15"
+sniffio = "==1.*"
 
 [package.extras]
-asyncio = ["anyio (>=4.0,<5.0)"]
 http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (==1.*)"]
-trio = ["trio (>=0.22.0,<1.0)"]
 
 [[package]]
 name = "httpx"
-version = "0.28.1"
+version = "0.23.3"
 description = "The next generation HTTP client."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad"},
-    {file = "httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc"},
+    {file = "httpx-0.23.3-py3-none-any.whl", hash = "sha256:a211fcce9b1254ea24f0cd6af9869b3d29aba40154e947d2a07bb499b3e310d6"},
+    {file = "httpx-0.23.3.tar.gz", hash = "sha256:9818458eb565bb54898ccb9b8b251a28785dd4a55afbc23d0eb410754fe7d0f9"},
 ]
 
 [package.dependencies]
-anyio = "*"
 certifi = "*"
-httpcore = "==1.*"
-idna = "*"
+httpcore = ">=0.15.0,<0.17.0"
+rfc3986 = {version = ">=1.3,<2", extras = ["idna2008"]}
+sniffio = "*"
 
 [package.extras]
 brotli = ["brotli ; platform_python_implementation == \"CPython\"", "brotlicffi ; platform_python_implementation != \"CPython\""]
-cli = ["click (==8.*)", "pygments (==2.*)", "rich (>=10,<14)"]
+cli = ["click (==8.*)", "pygments (==2.*)", "rich (>=10,<13)"]
 http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (==1.*)"]
-zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "idna"
@@ -526,6 +525,44 @@ files = [
 ]
 
 [[package]]
+name = "ptbcontrib"
+version = "0.0.0"
+description = "Contrib package for the python-telegram-bot library"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = []
+develop = false
+
+[package.dependencies]
+python-telegram-bot = [
+    {version = "*"},
+    {version = ">=20.0,<21.0", optional = true, markers = "extra == \"roles\""},
+]
+
+[package.extras]
+aiohttp-request = ["aiohttp[speedups] (>=3.11)", "python-telegram-bot (>=22.1)"]
+extract-passed-user = ["python-telegram-bot (>=21.1)"]
+extract-urls = ["python-telegram-bot (>=12.0)"]
+get-chat-link = ["python-telegram-bot (>=20.0,<21.0)"]
+log-forwarder = ["python-telegram-bot (>=20.0)"]
+longbotcommand = ["python-telegram-bot (>=13.0,<20)"]
+postgres-persistence = ["SQLAlchemy (==1.4.46)", "python-telegram-bot (>=20.0,<21.0)"]
+ptb-jobstores = ["SQLAlchemy (>=1.4.46,<1.5.0)", "pymongo (>=4.1,<5)", "python-telegram-bot[job-queue] (>=20.4,<21.0)", "python-telegram-bot[job-queue] (>=20.4,<21.0)"]
+ptb-jobstores-mongodb = ["pymongo (>=4.1,<5)", "python-telegram-bot[job-queue] (>=20.4,<21.0)"]
+ptb-jobstores-sqlalchemy = ["SQLAlchemy (>=1.4.46,<1.5.0)", "python-telegram-bot[job-queue] (>=20.4,<21.0)"]
+reply-to-message-filter = ["python-telegram-bot (>=20.0,<21.0)"]
+roles = ["python-telegram-bot (>=20.0,<21.0)"]
+send-by-kwargs = ["python-telegram-bot (>=20.0,<21.0)"]
+username-to-chat-api = ["httpx (>=0.23.0,<0.24.0)", "python-telegram-bot (>=20.0,<21.0)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/python-telegram-bot/ptbcontrib.git"
+reference = "main"
+resolved_reference = "209ca8520d4eb7679008a2467fcb40da0ae58ef7"
+
+[[package]]
 name = "pydantic"
 version = "2.11.7"
 description = "Data validation using Python type hints"
@@ -700,29 +737,46 @@ cli = ["click (>=5.0)"]
 
 [[package]]
 name = "python-telegram-bot"
-version = "22.3"
+version = "20.0"
 description = "We have made you a wrapper you can't refuse"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "python_telegram_bot-22.3-py3-none-any.whl", hash = "sha256:88fab2d1652dbfd5379552e8b904d86173c524fdb9270d3a8685f599ffe0299f"},
-    {file = "python_telegram_bot-22.3.tar.gz", hash = "sha256:513d5ab9db96dcf25272dad0a726555e80edf60d09246a7d0d425b77115f5440"},
+    {file = "python-telegram-bot-20.0.tar.gz", hash = "sha256:9ff3d7b03d0e621df6c903622338e30d761e121c27179e13f62ba2216b7c6d32"},
+    {file = "python_telegram_bot-20.0-py3-none-any.whl", hash = "sha256:2f7f0a0eee6517ffb3e9732b622b5c97c107517f35dc2a97273c74cb5ed39e9d"},
 ]
 
 [package.dependencies]
-httpx = ">=0.27,<0.29"
+httpx = ">=0.23.1,<0.24.0"
 
 [package.extras]
-all = ["aiolimiter (>=1.1,<1.3)", "apscheduler (>=3.10.4,<3.12.0)", "cachetools (>=5.3.3,<6.2.0)", "cffi (>=1.17.0rc1) ; python_version > \"3.12\"", "cryptography (>=39.0.1)", "httpx[http2]", "httpx[socks]", "tornado (>=6.5,<7.0)"]
-callback-data = ["cachetools (>=5.3.3,<6.2.0)"]
-ext = ["aiolimiter (>=1.1,<1.3)", "apscheduler (>=3.10.4,<3.12.0)", "cachetools (>=5.3.3,<6.2.0)", "tornado (>=6.5,<7.0)"]
-http2 = ["httpx[http2]"]
-job-queue = ["apscheduler (>=3.10.4,<3.12.0)"]
-passport = ["cffi (>=1.17.0rc1) ; python_version > \"3.12\"", "cryptography (>=39.0.1)"]
-rate-limiter = ["aiolimiter (>=1.1,<1.3)"]
+all = ["APScheduler (>=3.9.1,<3.10.0)", "aiolimiter (>=1.0.0,<1.1.0)", "cachetools (>=5.2.0,<5.3.0)", "cryptography (>=3.0,!=3.4,!=3.4.1,!=3.4.2,!=3.4.3)", "httpx[socks]", "pytz (>=2018.6)", "tornado (>=6.2,<7.0)"]
+callback-data = ["cachetools (>=5.2.0,<5.3.0)"]
+ext = ["APScheduler (>=3.9.1,<3.10.0)", "aiolimiter (>=1.0.0,<1.1.0)", "cachetools (>=5.2.0,<5.3.0)", "pytz (>=2018.6)", "tornado (>=6.2,<7.0)"]
+job-queue = ["APScheduler (>=3.9.1,<3.10.0)", "pytz (>=2018.6)"]
+passport = ["cryptography (>=3.0,!=3.4,!=3.4.1,!=3.4.2,!=3.4.3)"]
+rate-limiter = ["aiolimiter (>=1.0.0,<1.1.0)"]
 socks = ["httpx[socks]"]
-webhooks = ["tornado (>=6.5,<7.0)"]
+webhooks = ["tornado (>=6.2,<7.0)"]
+
+[[package]]
+name = "rfc3986"
+version = "1.5.0"
+description = "Validating URI References per RFC 3986"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "rfc3986-1.5.0-py2.py3-none-any.whl", hash = "sha256:a86d6e1f5b1dc238b218b012df0aa79409667bb209e58da56d0b94704e712a97"},
+    {file = "rfc3986-1.5.0.tar.gz", hash = "sha256:270aaf10d87d0d4e095063c65bf3ddbc6ee3d0b226328ce21e036f946e421835"},
+]
+
+[package.dependencies]
+idna = {version = "*", optional = true, markers = "extra == \"idna2008\""}
+
+[package.extras]
+idna2008 = ["idna"]
 
 [[package]]
 name = "sniffio"
@@ -857,4 +911,4 @@ typing-extensions = ">=4.12.0"
 [metadata]
 lock-version = "2.1"
 python-versions = "3.11"
-content-hash = "2ed825b141480f45d06e832529d3a33a02d8b7a2eaef6619c881b739309dda91"
+content-hash = "7762af112a691e99c92ddc615486f3e5acc1c4f038feb75d2cad7f000fa91e26"
