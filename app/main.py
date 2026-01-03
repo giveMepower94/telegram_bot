@@ -9,6 +9,7 @@ from app.infra.base import Base
 
 from ptbcontrib.roles import setup_roles, RolesHandler
 from app.core.users.constants import RolesEnum
+from app.jobs.sync_roles import sync_roles
 
 
 class Application(PTBApplication):
@@ -25,6 +26,7 @@ class Application(PTBApplication):
         await application.database.create_tables()
         await application.setup_roles()
         application.register_handlers()
+        application.setup_jobs()
 
     @staticmethod
     async def application_shutdown(application: "Application") -> None:
@@ -51,6 +53,10 @@ class Application(PTBApplication):
             for user_id in await self.user_service.get_user_ids_for_role(RolesEnum[role]):
                 self._roles[role].add_member(user_id)
 
+    def setup_jobs(self) -> None:
+        if self.job_queue is None:
+            raise Exception("job queue missing")
+        _roles_sync = self.job_queue.run_repeating(sync_roles, interval=60)
 
 def configure_logging():
     logging.basicConfig(
