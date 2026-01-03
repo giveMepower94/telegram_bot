@@ -7,7 +7,7 @@ from app.handlers import HANDLERS
 from app.infra.postgres.db import Database
 from app.infra.base import Base
 
-from ptbcontrib.roles import setup_roles
+from ptbcontrib.roles import setup_roles, RolesHandler
 from app.core.users.constants import RolesEnum
 
 
@@ -35,7 +35,13 @@ class Application(PTBApplication):
 
     def register_handlers(self):
         for handler in HANDLERS:
-            self.add_handler(handler)
+            if handler.role:
+                if self._roles is None:
+                    raise Exception("Roles are not set up")
+                self.add_handler(RolesHandler(handler.handler,
+                                              roles=self._roles[handler.role]))
+            else:
+                self.add_handler(handler.handler)
 
     async def setup_roles(self) -> None:
         for role in RolesEnum:
