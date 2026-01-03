@@ -9,15 +9,17 @@ from sqlalchemy.dialects.postgresql import insert
 class UserRepository:
     database: Database
 
-    async def create_user_if_not_exists(self,
-                                        user_id: int,
-                                        is_waiter: bool = False) -> None:
+    async def create_user_if_not_exists(self, user_id: int, is_waiter: bool = False) -> None:
         async with self.database.session() as session:
-            insert_stmt = insert(User).values(id=user_id, is_waiter=is_waiter)
-            await session.execute(insert_stmt)
-            await session.commit()
+            stmt = (
+                insert(User)
+                .values(id=user_id, is_waiter=is_waiter)
+                .on_conflict_do_nothing(index_elements=["id"])  # если id уже есть — ничего не делаем
+            )
+            await session.execute(stmt)
 
     async def get_waiter_user_ids(self) -> list[int]:
         async with self.database.session() as session:
-            query = select(User.id).where(User.is_waiter==True)
-            return list(await session.scalars(query))
+            query = select(User.id).where(User.is_waiter.is_(True))
+            result = await session.execute(query)
+            return result.scalars().all()

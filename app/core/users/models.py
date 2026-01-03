@@ -1,4 +1,4 @@
-from infra.base import Base
+from app.infra.base import Base
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import BIGINT, BOOLEAN
 

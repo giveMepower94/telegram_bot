@@ -24,11 +24,13 @@ class Database:
 
     @asynccontextmanager
     async def session(self) -> AsyncGenerator[AsyncSession, None]:
-        session: AsyncSession = self._async_session
+        session: AsyncSession = self._async_session()
 
-        async with session:
-            try:
-                yield session
-            except Exception:
-                await session.rollback()
-                raise
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
