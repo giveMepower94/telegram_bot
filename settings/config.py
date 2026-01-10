@@ -14,3 +14,7 @@ class AppSettings(BaseSettings):
         PostgresDsn(
             "postgresql+asyncpg://postgres:Admin1994@localhost:5432/postgres"
             ))
+    ADMIN_INTERFACE_PORT: int = 8001
+    ADMIN_SECRET_KEY: SecretStr = SecretStr("secretkey")
+    ADMIN_LOGIN: SecretStr = SecretStr("admin")
+    ADMIN_PASSWORD: SecretStr = SecretStr("admin")

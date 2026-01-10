@@ -15,6 +15,9 @@ psycopg2-binary = ">=2.9.10,<3.0.0"
 asyncpg = ">=0.30.0,<0.31.0"
 sqlalchemy = { version = ">=2.0.45,<3.0.0", extras = ["asyncio"] }
 ptbcontrib = { git = "https://github.com/python-telegram-bot/ptbcontrib.git", rev = "main", extras = ["roles"] }
+sqladmin = "^0.22.0"
+itsdangerous = "^2.2.0"
+uvicorn = "^0.40.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
