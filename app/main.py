@@ -56,7 +56,8 @@ class Application(PTBApplication):
     def setup_jobs(self) -> None:
         if self.job_queue is None:
             raise Exception("job queue missing")
-        _roles_sync = self.job_queue.run_repeating(sync_roles, interval=60)
+        roles_sync = self.job_queue.run_repeating(sync_roles, interval=60)
+
 
 def configure_logging():
     logging.basicConfig(
@@ -70,6 +71,7 @@ def create_app(app_settings: AppSettings) -> Application:
     application = (
         ApplicationBuilder()
         .application_class(Application, kwargs={"app_settings": app_settings})
+        .arbitrary_callback_data(True)
         .post_init(Application.application_startup)  # type: ignore[arg-type]
         .post_shutdown(Application.application_shutdown)  # type: ignore[arg-type]
         .token(app_settings.TELEGRAM_API_KEY.get_secret_value())
