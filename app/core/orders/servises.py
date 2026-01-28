@@ -18,6 +18,7 @@ class OrderService:
     repository: OrderRepository
 
     async def create_order(self, user_id: int) -> int:
+        """Создает новый заказ для пользователя, если нет активного."""
         if await self.repository.get_active_order_for_user(user_id):
             raise ActiveOrderExists()
         return await self.repository.create_order(user_id)
@@ -29,10 +30,10 @@ class OrderService:
         return await self.repository.get_active_order_for_user(user_id)
 
     async def add_product_to_order(self, order_id: int, product_id: int) -> None:
-        return await self.repository.add_product_to_order(order_id, product_id)
+        await self.repository.add_product_to_order(order_id, product_id)
 
     async def send_order_to_waiters(self, order_id: int) -> None:
-        return await self.repository.set_order_status(order_id, OrderStatusEnum.ordered)
+        await self.repository.set_order_status(order_id, OrderStatusEnum.ordered)
 
     async def mark_order_done(self, order_id: int) -> None:
-        return await self.repository.set_order_status(order_id, OrderStatusEnum.done)
+        await self.repository.set_order_status(order_id, OrderStatusEnum.done)

@@ -10,6 +10,9 @@ class UserService:
     async def register_visitor(self, user_id: int) -> None:
         await self.repository.create_user_if_not_exists(user_id)
 
+    async def get_waiter_user_ids(self) -> list[int]:
+        return await self.get_user_ids_for_role(RolesEnum.waiter)
+
     async def get_user_ids_for_role(self, role: RolesEnum) -> list[int]:
         match role:
             case RolesEnum.waiter:

@@ -2,4 +2,5 @@ from telegram.ext import ContextTypes
 
 
 async def sync_roles(context: ContextTypes.DEFAULT_TYPE) -> None:
-    await context.application.setup_roles()
+    app = context.application  # type: ignore[attr-defined]
+    await app.setup_roles()
