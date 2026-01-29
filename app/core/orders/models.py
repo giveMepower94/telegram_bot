@@ -20,7 +20,7 @@ class Order(Base):
     id: Mapped[int] = mapped_column(INTEGER, primary_key=True)
     user_id: Mapped[int] = mapped_column(BIGINT, nullable=False)
     status: Mapped[OrderStatusEnum] = mapped_column(
-       ENUM(*[str(member) for member in OrderStatusEnum], name="order_status")
+       ENUM(*[member.value for member in OrderStatusEnum], name="order_status")
     )
     products: Mapped[list["OrderedProduct"]] = relationship()
 
@@ -32,3 +32,4 @@ class OrderedProduct(Base):
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"), primary_key=True)
     amount: Mapped[int] = mapped_column(INTEGER, nullable=False)
     product: Mapped["Product"] = relationship()
+

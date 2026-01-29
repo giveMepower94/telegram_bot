@@ -23,8 +23,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     app: "Application" = context.application  # type: ignore[assignment]
     order_service: OrderService = app.order_service
+    user_service: UserService = app.user_service
 
     try:
+        await user_service.register_visitor(user_id)
         # Пытаемся создать новый заказ
         order_id = await order_service.create_order(user_id)
         new_order = await order_service.get_order_by_id(order_id)
@@ -62,8 +64,10 @@ async def create_order(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     app: "Application" = context.application  # type: ignore[assignment]
     order_service: OrderService = app.order_service
     product_service: ProductService = app.product_service
+    user_service: UserService = app.user_service
 
     user_id = update.effective_user.id
+    await user_service.register_visitor(user_id)
 
     # Получаем список товаров
     items = await product_service.list_products()
@@ -82,6 +86,12 @@ async def create_order(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     except ActiveOrderExists:
         # Если уже есть активный заказ — продолжаем его
         active_order = await order_service.get_active_order_for_user(user_id)
+        if not active_order:
+            await context.bot.send_message(
+                chat_id=user_id,
+                text="❌ Не удалось найти активный заказ, попробуйте снова.",
+            )
+            return
         await context.bot.send_message(
             chat_id=user_id,
             text=format_order_contents(active_order),
@@ -92,6 +102,8 @@ async def create_order(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 async def add_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
+    if not query:
+        return
     await query.answer()
     callback_data = query.data
 
@@ -105,6 +117,12 @@ async def add_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     await order_service.add_product_to_order(order_id, item_id)
     order = await order_service.get_order_by_id(order_id)
+    if not order:
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="❌ Заказ не найден. Попробуйте создать новый заказ.",
+        )
+        return
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -116,6 +134,8 @@ async def add_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def finish_order(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
+    if not query:
+        return
     await query.answer()
     callback_data = query.data
 
@@ -134,6 +154,12 @@ async def finish_order(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     waiter_users_ids = await user_service.get_waiter_user_ids()
     order = await order_service.get_order_by_id(order_id)
+    if not order:
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="❌ Заказ не найден.",
+        )
+        return
 
     for waiter_user_id in waiter_users_ids:
         await context.bot.send_message(

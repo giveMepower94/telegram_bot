@@ -23,13 +23,13 @@ class OrderRepository:
 
     async def create_order(self, user_id: int) -> int:
         async with self.database.session() as session:
-            insert_stmt = insert(Order).values(
-                user_id=user_id,
-                status=OrderStatusEnum.unlisted
+            insert_stmt = (
+                insert(Order)
+                .values(user_id=user_id, status=OrderStatusEnum.unlisted)
+                .returning(Order.id)
             )
             result = await session.execute(insert_stmt)
-            await session.commit()
-            return result.scalar()
+            return result.scalar_one()
 
     async def get_order_by_id(self, order_id: int) -> Order | None:
         async with self.database.session() as session:
@@ -69,10 +69,8 @@ class OrderRepository:
                 set_={"amount": OrderedProduct.amount + 1}
             )
             await session.execute(upsert_stmt)
-            await session.commit()
 
     async def set_order_status(self, order_id: int, status: OrderStatusEnum) -> None:
         async with self.database.session() as session:
             update_stmt = update(Order).where(Order.id == order_id).values(status=status)
             await session.execute(update_stmt)
-            await session.commit()
