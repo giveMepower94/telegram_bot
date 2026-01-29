@@ -7,9 +7,9 @@ def build_order_buttons(order_id: int, items: list[Product]) -> InlineKeyboardMa
     keyboard = []
     for item in items:
         keyboard.append([InlineKeyboardButton(text=f"{item.name}",
-                                              callback_data=("add_item", order_id, item.id))])
+                                              callback_data=f"add_item_{order_id}_{item.id}")])
     keyboard.append([InlineKeyboardButton(text="Завершить заказ",
-                                          callback_data=("finish_order", order_id))])
+                                          callback_data=f"finish_order_{order_id}")])
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -21,7 +21,7 @@ def format_order_contents(order: Order) -> str:
         if order.status == OrderStatusEnum.unlisted:
             msg_text += "Выберите что-то еще или оформите новый заказ"
     else:
-        msg_text += "<b>В вашей корзине пока пусто</b>\nВыберите, что хотите заказать"
+        msg_text = "<b>В вашей корзине пока пусто</b>\nВыберите, что хотите заказать"
     return msg_text
 
 
@@ -30,3 +30,4 @@ def format_order_contents_for_waiters(order: Order) -> str:
     for ordered_products in order.products:
         msg_text += f"- <b>{ordered_products.product.name}:</b> {ordered_products.amount}\n"
     return msg_text
+

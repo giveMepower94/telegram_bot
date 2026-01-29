@@ -1,43 +1,43 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes
 from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from app.main import Application
+
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
-from app.infra.postgres
-from app.core.orders.servises import OrderService
-from app.core.orders.constants import OrderStatusEnum
+from telegram.ext import ContextTypes
+
 from app.core.users.constants import RolesEnum
 from app.core.orders.exceptions import ActiveOrderExists
 from app.core.orders.servises import ProductService, OrderService
 from app.core.users.services import UserService
 from app.handlers.helpers import build_order_buttons, format_order_contents, format_order_contents_for_waiters
 
+if TYPE_CHECKING:
+    from app.main import Application
+
 
 # Создаем обработчик команды start с помощью асинронной функции
-async def create_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not update.effective_user:
+        return
+
     user_id = update.effective_user.id
+
+    app: "Application" = context.application  # type: ignore[assignment]
+    order_service: OrderService = app.order_service
 
     try:
         # Пытаемся создать новый заказ
-        order_id = await OrderService.create_order(user_id)
-        # Если создалось — подгружаем заказ с продуктами сразу через сессию
-        async with async_session() as session:
-            from app.core.orders.models import Order
-            new_order = await session.get(Order, order_id)
-            text = f"✅ Ваш заказ создан!\n\n{format_order_contents(new_order)}"
-
+        order_id = await order_service.create_order(user_id)
+        new_order = await order_service.get_order_by_id(order_id)
+        text = "✅ Ваш заказ создан!"
+        if new_order:
+            text = f"{text}\n\n{format_order_contents(new_order)}"
     except ActiveOrderExists:
-        # Если заказ уже есть — подгружаем активный заказ через сессию
-        async with async_session() as session:
-            from app.core.orders.models import Order
-            active_order = await session.execute(
-                Order.__table__.select().where(Order.user_id == user_id, Order.status == "active")
-            )
-            active_order = active_order.scalars().first()
+        # Если заказ уже есть — подгружаем активный заказ
+        active_order = await order_service.get_active_order_for_user(user_id)
+        text = "⚠ У вас уже есть активный заказ."
+        if active_order:
             text = f"⚠ У вас уже есть активный заказ:\n\n{format_order_contents(active_order)}"
 
-    
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="🍦 Сделать заказ", callback_data="order_create")]
@@ -46,7 +46,8 @@ async def create_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.effective_chat.send_message(
         text=text,
-        reply_markup=keyboard
+        reply_markup=keyboard,
+        parse_mode=ParseMode.HTML
     )
 
 
@@ -98,7 +99,8 @@ async def add_item(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     order_service: OrderService = app.order_service
     product_service: ProductService = app.product_service
 
-    order_id, item_id = int(callback_data[1]), int(callback_data[2])
+    parts = callback_data.split("_")
+    order_id, item_id = int(parts[2]), int(parts[3])
     products = await product_service.list_products()
 
     await order_service.add_product_to_order(order_id, item_id)
@@ -121,7 +123,8 @@ async def finish_order(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     order_service: OrderService = app.order_service
     user_service: UserService = app.user_service
 
-    order_id = int(callback_data[1])
+    parts = callback_data.split("_")
+    order_id = int(parts[2])
     await order_service.send_order_to_waiters(order_id)
 
     await context.bot.send_message(
@@ -138,7 +141,13 @@ async def finish_order(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             text=f"Создан новый заказ: {order_id}\n\n"
                  f"{format_order_contents_for_waiters(order)}",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton(text="Заказ доставлен", callback_data=("waiters finish order", order_id))]])
+                [
+                    InlineKeyboardButton(
+                        text="Заказ доставлен",
+                        callback_data=f"waiter_finish_order_{order_id}",
+                    )
+                ]
+            ])
         )
 
 
